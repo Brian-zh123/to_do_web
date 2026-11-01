@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3eee2">
+  <meta name="description" content="校园代办：粘贴一段校园通知，自动识别什么事、什么时候截止、要做什么、在哪办，并生成可勾选的待办清单。">
+  <title>校园代办 · 把通知变成清单</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23254b3b'/%3E%3Cpath d='M18 33l9 9 19-21' fill='none' stroke='%23f6c85f' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+    <symbol id="icon-spark" viewBox="0 0 24 24"><path d="M12 2.8l1.7 5.2 5.2 1.7-5.2 1.7L12 16.6l-1.7-5.2L5.1 9.7l5.2-1.7L12 2.8zM19 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2zM5 15l.6 1.7 1.7.6-1.7.6L5 19.6l-.6-1.7-1.7-.6 1.7-.6L5 15z"/></symbol>
+    <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></symbol>
+    <symbol id="icon-pin" viewBox="0 0 24 24"><path d="M20 10c0 5.4-8 12-8 12S4 15.4 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="2.7"/></symbol>
+    <symbol id="icon-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6l1 1 2-2M4.5 12l1 1 2-2M4.5 18l1 1 2-2"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></symbol>
+    <symbol id="icon-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></symbol>
+    <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="icon-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="icon-megaphone" viewBox="0 0 24 24"><path d="M4 10v4a2 2 0 0 0 2 2h2l7 4V4L8 8H6a2 2 0 0 0-2 2z"/><path d="M18 8a5 5 0 0 1 0 8M8 16l1 5h4l-1-4"/></symbol>
+    <symbol id="icon-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22.5v-17z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 9a7 7 0 0 1 11.6-2L20 12M4 12l2.3 5a7 7 0 0 0 11.6-2"/></symbol>
+    <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="M8 10l4 4 4-4"/></symbol>
+  </svg>
+
+  <div class="page-texture" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#top" aria-label="校园代办首页">
+        <span class="brand-mark">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M8.5 20.5l7 7L31.5 11" fill="none" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 5" opacity=".55"/>
+          </svg>
+        </span>
+        <span class="brand-type">
+          <strong>校园代办</strong>
+          <small>CAMPUS CONCIERGE</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="主要导航">
+        <a href="#workspace" class="is-active">解析台</a>
+        <a href="#tasks">待办清单</a>
+        <a href="#how">怎么用</a>
+      </nav>
+
+      <div class="top-actions">
+        <span class="today-chip" aria-label="今天的日期">
+          <span id="todayWeekday">周日</span>
+          <strong id="todayDate">11.01</strong>
+        </span>
+        <button class="history-button" id="historyToggle" type="button" aria-controls="historyDrawer" aria-expanded="false">
+          <svg class="icon" aria-hidden="true"><use href="#icon-history"/></svg>
+          <span>最近</span>
+          <b id="historyCount">0</b>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-line"></span> NOTICE IN, PLAN OUT</div>
+        <h1 id="heroTitle">通知太长，<br><span class="highlight">重点</span>我圈好了。</h1>
+        <p class="hero-lede">粘贴班级群、学院官网里的通知，自动拆出“什么事、什么时候、要做什么、在哪办”，排成一张不会漏的代办清单。</p>
+        <div class="hero-tags" aria-label="产品能力">
+          <span><svg class="icon"><use href="#icon-spark"/></svg> 事项识别</span>
+          <span><svg class="icon"><use href="#icon-calendar"/></svg> 截止时间</span>
+          <span><svg class="icon"><use href="#icon-lock"/></svg> 本地处理</span>
+        </div>
+      </div>
+
+      <aside class="hero-aside" aria-label="产品说明">
+        <div class="sticky-note">
+          <span class="tape" aria-hidden="true"></span>
+          <span class="note-label">TODAY'S REMINDER</span>
+          <p>“截止 11 月 3 日 17:00”<br>不该淹没在 500 字里。</p>
+          <span class="note-sign">— 给总是错过通知的你</span>
+        </div>
+        <div class="hero-stat">
+          <strong>4</strong>
+          <span>个关键字段<br>一次拆清</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="workspace" id="workspace" aria-label="通知解析工作台">
+      <div class="workspace-grid">
+        <section class="panel input-panel" aria-labelledby="inputTitle">
+          <div class="panel-heading">
+            <span class="step-number">01</span>
+            <div class="heading-copy">
+              <h2 id="inputTitle">粘贴通知</h2>
+              <p>原文不用改，直接贴进来</p>
+            </div>
+            <span class="local-badge"><span class="status-dot"></span> 本地解析</span>
+          </div>
+
+          <div class="notice-field">
+            <label class="sr-only" for="noticeInput">粘贴校园通知原文</label>
+            <textarea id="noticeInput" spellcheck="false" placeholder="把班级群、学院官网里的通知粘贴到这里……&#10;&#10;例如：请各班于 11 月 3 日 17:00 前，将报名表发送至学生会邮箱……"></textarea>
+            <div class="field-meta">
+              <span id="charCount">0 字</span>
+              <span class="shortcut-hint">Ctrl / ⌘ + Enter 解析</span>
+            </div>
+          </div>
+
+          <div class="sample-strip">
+            <span class="sample-label">不知道贴什么？</span>
+            <div class="sample-chips" id="sampleChips"></div>
+          </div>
+
+          <div class="parse-row">
+            <button class="text-button" id="clearButton" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#icon-trash"/></svg>
+              清空
+            </button>
+            <button class="primary-button" id="parseButton" type="button">
+              <span class="button-label">
+                <svg class="icon" aria-hidden="true"><use href="#icon-spark"/></svg>
+                提取代办
+              </span>
+              <span class="button-loader" aria-hidden="true"></span>
+              <svg class="icon button-arrow" aria-hidden="true"><use href="#icon-arrow"/></svg>
+            </button>
+          </div>
+
+          <div class="privacy-line">
+            <svg class="icon" aria-hidden="true"><use href="#icon-lock"/></svg>
+            <span>所有文字只在你自己的浏览器里解析，不会上传服务器。</span>
+          </div>
+
+          <div class="mini-history" id="miniHistory" hidden>
+            <div class="mini-history-head">
+              <span>最近解析</span>
+              <button type="button" id="openHistoryFromMini">全部</button>
+            </div>
+            <div class="mini-history-list" id="miniHistoryList"></div>
+          </div>
+        </section>
+
+        <section class="panel result-panel" id="tasks" aria-labelledby="resultTitleLabel" aria-live="polite">
+          <div class="panel-heading result-heading">
+            <span class="step-number">02</span>
+            <div class="heading-copy">
+              <h2 id="resultTitleLabel">识别结果</h2>
+              <p>该做什么，一眼看清</p>
+            </div>
+            <span class="coverage-badge" id="coverageBadge" hidden>4/4 字段</span>
+          </div>
+
+          <div class="empty-state" id="emptyState">
+            <div class="empty-illustration" aria-hidden="true">
+              <div class="empty-paper">
+                <span class="paper-line w80"></span>
+                <span class="paper-line w60"></span>
+                <span class="paper-line w90"></span>
+                <span class="paper-line w45"></span>
+              </div>
+              <span class="empty-badge badge-a"><svg class="icon"><use href="#icon-calendar"/></svg></span>
+              <span class="empty-badge badge-b"><svg class="icon"><use href="#icon-pin"/></svg></span>
+              <span class="empty-badge badge-c"><svg class="icon"><use href="#icon-check"/></svg></span>
+            </div>
+            <h3>清单的位置，留给下一段通知</h3>
+            <p>粘贴文字后点击“提取代办”，这里会自动长出一张按截止时间排好的清单。</p>
+            <button class="ghost-button" id="emptySampleButton" type="button">先用一段示例试试 <svg class="icon"><use href="#icon-arrow"/></svg></button>
+          </div>
+
+          <div class="result-content" id="resultContent" hidden>
+            <div class="result-topline">
+              <span class="category-chip" id="categoryChip">
+                <svg class="icon" aria-hidden="true"><use href="#icon-megaphone"/></svg>
+                <span id="categoryText">活动报名</span>
+              </span>
+              <span class="recognized-chip"><span class="status-dot"></span> 已识别</span>
+              <span class="result-stamp" aria-hidden="true">已圈重点</span>
+            </div>
+
+            <h3 class="result-title" id="resultTitle"></h3>
+            <p class="result-summary" id="resultSummary"></p>
+
+            <div class="meta-grid" id="metaGrid">
+              <article class="meta-card meta-what">
+                <span class="meta-icon"><svg class="icon"><use href="#icon-megaphone"/></svg></span>
+                <span class="meta-label">什么事</span>
+                <strong class="meta-value" id="whatValue"></strong>
+                <span class="meta-sub" id="whatSub"></span>
+              </article>
+              <article class="meta-card meta-when" id="whenCard">
+                <span class="meta-icon"><svg class="icon"><use href="#icon-calendar"/></svg></span>
+                <span class="meta-label" id="whenLabel">什么时候截止</span>
+                <strong class="meta-value meta-date" id="whenValue"></strong>
+                <span class="meta-sub" id="whenSub"></span>
+              </article>
+              <article class="meta-card meta-todo">
+                <span class="meta-icon"><svg class="icon"><use href="#icon-list"/></svg></span>
+                <span class="meta-label">要做什么</span>
+                <strong class="meta-value" id="todoValue"></strong>
+                <span class="meta-sub" id="todoSub"></span>
+              </article>
+              <article class="meta-card meta-where">
+                <span class="meta-icon"><svg class="icon"><use href="#icon-pin"/></svg></span>
+                <span class="meta-label">在哪办</span>
+                <strong class="meta-value" id="whereValue"></strong>
+                <span class="meta-sub" id="whereSub"></span>
+              </article>
+            </div>
+
+            <div class="event-strip" id="eventStrip" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg>
+              <span id="eventStripText"></span>
+            </div>
+
+            <div class="todo-block">
+              <div class="todo-heading">
+                <div>
+                  <span class="section-kicker">YOUR CHECKLIST</span>
+                  <h3>代办清单 <span id="taskCountLabel">0 项</span></h3>
+                </div>
+                <div class="progress-copy"><strong id="progressText">0/0</strong><span>已完成</span></div>
+              </div>
+              <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
+              <ul class="task-list" id="taskList"></ul>
+              <form class="add-task" id="addTaskForm">
+                <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>
+                <input id="addTaskInput" type="text" maxlength="80" autocomplete="off" placeholder="补一条通知没写、但你要做的事……">
+                <button type="submit">添加</button>
+              </form>
+            </div>
+
+            <div class="result-actions">
+              <button class="soft-button" id="copyButton" type="button"><svg class="icon"><use href="#icon-copy"/></svg> 复制清单</button>
+              <button class="soft-button" id="icsButton" type="button"><svg class="icon"><use href="#icon-download"/></svg> 导出日历</button>
+              <span class="save-status" id="saveStatus"><span class="status-dot"></span> 已自动保存到本机</span>
+            </div>
+
+            <details class="source-details" id="sourceDetails">
+              <summary>
+                <span>查看原文与识别依据</span>
+                <svg class="icon"><use href="#icon-chevron"/></svg>
+              </summary>
+              <div class="source-body">
+                <p class="source-tip">结果由本地规则识别，重要通知建议再向发布方确认一次。</p>
+                <pre id="sourceText"></pre>
+              </div>
+            </details>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="how" id="how" aria-labelledby="howTitle">
+      <div class="how-heading">
+        <span class="eyebrow"><span class="eyebrow-line"></span> HOW IT WORKS</span>
+        <h2 id="howTitle">从一段话，到一张清单。</h2>
+      </div>
+      <div class="how-grid">
+        <article class="how-card">
+          <span class="how-index">01</span>
+          <span class="how-icon"><svg class="icon"><use href="#icon-copy"/></svg></span>
+          <h3>原样粘贴</h3>
+          <p>不用删掉称呼、客套话和附件说明，多乱的通知都能直接贴。</p>
+        </article>
+        <article class="how-card">
+          <span class="how-index">02</span>
+          <span class="how-icon"><svg class="icon"><use href="#icon-spark"/></svg></span>
+          <h3>自动圈重点</h3>
+          <p>识别事项、截止时间、动作要求和办理地点，把长文拆成四个答案。</p>
+        </article>
+        <article class="how-card">
+          <span class="how-index">03</span>
+          <span class="how-icon"><svg class="icon"><use href="#icon-check"/></svg></span>
+          <h3>勾完为止</h3>
+          <p>清单自动保存在本机，做完一件勾一件；还能导出到系统日历。</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand"><span class="footer-mark">✓</span> 校园代办</div>
+    <p>把时间留给重要的事，而不是翻聊天记录。</p>
+    <span class="footer-note">纯前端演示 · 数据只存在本机</span>
+  </footer>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+  <aside class="history-drawer" id="historyDrawer" aria-labelledby="historyTitle" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <span class="section-kicker">LOCAL ARCHIVE</span>
+        <h2 id="historyTitle">最近解析</h2>
+      </div>
+      <button class="icon-button" id="historyClose" type="button" aria-label="关闭最近解析">
+        <svg class="icon"><use href="#icon-close"/></svg>
+      </button>
+    </div>
+    <p class="drawer-tip">只保存在这台设备上，最多保留 8 条。</p>
+    <div class="history-list" id="historyList"></div>
+    <button class="drawer-clear" id="clearHistoryButton" type="button">清空全部记录</button>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="parser.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
